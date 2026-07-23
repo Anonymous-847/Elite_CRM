@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Elite Digital Hub (Regd.) — CRM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ===================== LOGIN SCREEN ===================== -->
+<section id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <div class="brand-mark">EDH</div>
+    <h1 class="login-title">Elite Digital Hub (Regd.)</h1>
+    <p class="login-sub">Team Access Console</p>
+
+    <form id="loginForm" class="login-form">
+      <label for="userInput">Username</label>
+      <input type="text" id="userInput" placeholder="Enter username" autocomplete="username" required>
+      <label for="passInput">Password</label>
+      <input type="password" id="passInput" placeholder="Enter password" autocomplete="current-password" required>
+      <p id="loginError" class="login-error"></p>
+      <button type="submit" class="btn btn-gold">Enter Console</button>
+    </form>
+</section>
+
+<!-- ===================== APP SHELL ===================== -->
+<div id="app" class="app hidden">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-top">
+      <div class="brand-mark small" id="sidebarAvatar">EDH</div>
+      <div class="brand-text">
+        <div class="brand-name">Elite Digital Hub (Regd.)</div>
+        <div class="brand-role" id="sidebarRole">Owner Console</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-view="dashboard">
+        <span class="nav-num">01</span> Dashboard
+      </button>
+      <button class="nav-item" data-view="items">
+        <span class="nav-num">02</span> Items
+      </button>
+      <button class="nav-item" data-view="orders">
+        <span class="nav-num">03</span> Orders
+      </button>
+
+      <div class="nav-group">
+        <button type="button" class="nav-item nav-toggle" id="salesToggle">
+          <span class="nav-num">04</span> Sales
+          <span class="nav-caret" id="salesCaret">&#9662;</span>
+        </button>
+        <div class="nav-sub" id="salesSub">
+          <button type="button" class="nav-item nav-subitem" data-view="invoice">Invoice</button>
+        </div>
+      </div>
+
+      <button class="nav-item" data-view="expenses">
+        <span class="nav-num">05</span> Expenses
+      </button>
+      <button class="nav-item" data-view="users" id="usersNavItem">
+        <span class="nav-num">06</span> Users
+      </button>
+      <button class="nav-item" data-view="tasks">
+        <span class="nav-num">07</span> Tasks
+      </button>
+      <button class="nav-item" data-view="reports">
+        <span class="nav-num">08</span> Reports
+      </button>
+      <button class="nav-item" data-view="history">
+        <span class="nav-num">09</span> History
+      </button>
+      <button class="nav-item" data-view="settings">
+        <span class="nav-num">10</span> Settings
+      </button>
+    </nav>
+
+    <button id="logoutBtn" class="logout-btn">Log out ↦</button>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- ---------- DASHBOARD ---------- -->
+    <section id="view-dashboard" class="view active">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Overview</p>
+          <h2>Dashboard</h2>
+        </div>
+        <div class="today" id="todayDate"></div>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <p class="stat-label">Total Income</p>
+          <p class="stat-value income" id="statIncome">Rs 0</p>
+          <p class="stat-foot">From delivered orders</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Expenses</p>
+          <p class="stat-value expense" id="statExpense">Rs 0</p>
+          <p class="stat-foot">All recorded outgoings</p>
+        </div>
+        <div class="stat-card highlight">
+          <p class="stat-label">Net Profit / Loss</p>
+          <p class="stat-value" id="statNet">Rs 0</p>
+          <p class="stat-foot" id="statNetFoot">Income minus expenses</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Orders</p>
+          <p class="stat-value" id="statOrders">0</p>
+          <p class="stat-foot" id="statOrdersFoot">0 pending</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Items</p>
+          <p class="stat-value" id="statItems">0</p>
+          <p class="stat-foot" id="statItemsFoot">0 low stock</p>
+        </div>
+      </div>
+
+      <!-- ---------- STOCK MANAGEMENT ---------- -->
+      <div class="panel stock-panel">
+        <div class="panel-head">
+          <h3>Stock Management</h3>
+          <p class="panel-sub">Record Stock In / Stock Out for any date — syncs automatically with Items</p>
+        </div>
+
+        <div class="stock-summary-grid">
+          <div class="stock-summary-card">
+            <p class="stat-label">Stock In</p>
+            <p class="stat-value income" id="stockInTotal">0</p>
+            <p class="stat-foot">Total units received, all time</p>
+          </div>
+          <div class="stock-summary-card">
+            <p class="stat-label">Stock Out</p>
+            <p class="stat-value expense" id="stockOutTotal">0</p>
+            <p class="stat-foot">Total units issued, all time</p>
+          </div>
+          <div class="stock-summary-card">
+            <p class="stat-label">Remaining Stock</p>
+            <p class="stat-value" id="stockRemainingTotal">0</p>
+            <p class="stat-foot">Current units across all items</p>
+          </div>
+        </div>
+
+        <div id="stockMoveFormWrap">
+          <form id="stockMoveForm" class="stock-move-form">
+            <div class="stock-move-grid">
+              <div>
+                <label for="stockMoveItem">Item</label>
+                <select id="stockMoveItem" required></select>
+              </div>
+              <div>
+                <label for="stockMoveType">Movement</label>
+                <select id="stockMoveType">
+                  <option value="in">Stock In</option>
+                  <option value="out">Stock Out</option>
+                </select>
+              </div>
+              <div>
+                <label for="stockMoveQty">Quantity</label>
+                <input type="number" id="stockMoveQty" min="1" step="1" required>
+              </div>
+              <div>
+                <label for="stockMoveDate">Date</label>
+                <input type="date" id="stockMoveDate" required>
+              </div>
+              <div class="stock-move-note-field">
+                <label for="stockMoveNote">Note (optional)</label>
+                <input type="text" id="stockMoveNote" placeholder="e.g. Purchased from supplier">
+              </div>
+              <button type="submit" class="btn btn-gold stock-move-submit">+ Record Movement</button>
+            </div>
+            <p id="stockMoveMsg" class="form-msg"></p>
+          </form>
+        </div>
+
+        <div class="stock-move-table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Item</th>
+                <th>Movement</th>
+                <th>Qty</th>
+                <th>Remaining</th>
+                <th>Note</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="stockMovesBody"></tbody>
+          </table>
+          <p id="stockMovesEmpty" class="empty-state hidden">No stock movements recorded yet.</p>
+        </div>
+      </div>
+
+      <div class="panel-grid">
+        <div class="charts-stack">
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <h3>Total Income</h3>
+              <p class="panel-sub">Last 6 months, from completed orders</p>
+            </div>
+            <canvas id="incomeChart" height="120"></canvas>
+          </div>
+
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <h3>Total Expenses</h3>
+              <p class="panel-sub">Last 6 months, all recorded outgoings</p>
+            </div>
+            <canvas id="expenseChart" height="120"></canvas>
+          </div>
+
+          <div class="panel chart-panel">
+            <div class="panel-head">
+              <h3>Profit / Loss</h3>
+              <p class="panel-sub">Last 6 months, income minus expenses</p>
+            </div>
+            <canvas id="profitChart" height="120"></canvas>
+          </div>
+        </div>
+
+        <div class="panel activity-panel">
+          <div class="panel-head">
+            <h3>Recent Activity</h3>
+            <p class="panel-sub">Latest entries in the ledger</p>
+          </div>
+          <ul id="recentActivity" class="activity-list"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- ITEMS ---------- -->
+    <section id="view-items" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Catalog</p>
+          <h2>Items</h2>
+        </div>
+        <button class="btn btn-gold" id="addItemBtn">+ New Item</button>
+      </header>
+
+      <div class="panel">
+        <div class="table-toolbar">
+          <input type="text" id="itemSearch" class="search-input" placeholder="Search items by name or category…">
+          <span class="table-count" id="itemCount"></span>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Item Name</th>
+              <th>Category</th>
+              <th>Price</th>
+              <th>Stock</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="itemsTableBody"></tbody>
+        </table>
+        </div>
+        <p id="itemsEmpty" class="empty-state hidden">No items yet. Click "New Item" to add your first one.</p>
+      </div>
+    </section>
+
+    <!-- ---------- ORDERS ---------- -->
+    <section id="view-orders" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Sales</p>
+          <h2>Orders</h2>
+        </div>
+        <button class="btn btn-gold" id="addOrderBtn">+ New Order</button>
+      </header>
+
+      <div class="panel">
+        <div class="table-toolbar">
+          <input type="text" id="orderSearch" class="search-input" placeholder="Search orders by customer or item…">
+          <span class="table-count" id="orderCount"></span>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Order ID</th>
+              <th>Customer</th>
+              <th>Contact</th>
+              <th>Email</th>
+              <th>Service / Item</th>
+              <th>Amount</th>
+              <th>Status</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="ordersTableBody"></tbody>
+        </table>
+        </div>
+        <p id="ordersEmpty" class="empty-state hidden">No orders yet. Click "New Order" to add your first one.</p>
+      </div>
+    </section>
+
+    <!-- ---------- SALES / INVOICE ---------- -->
+    <section id="view-invoice" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Sales</p>
+          <h2>Invoices</h2>
+        </div>
+        <button class="btn btn-gold" id="addInvoiceBtn">+ New Invoice</button>
+      </header>
+
+      <div class="panel">
+        <div class="table-toolbar">
+          <input type="text" id="invoiceSearch" class="search-input" placeholder="Search by customer or tracking ID…">
+          <span class="table-count" id="invoiceCount"></span>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Tracking ID</th>
+              <th>Customer</th>
+              <th>Date</th>
+              <th>Subtotal</th>
+              <th>Paid</th>
+              <th>Pending</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="invoicesTableBody"></tbody>
+        </table>
+        </div>
+        <p id="invoicesEmpty" class="empty-state hidden">No invoices yet. Click "New Invoice" to create your first one.</p>
+      </div>
+    </section>
+
+    <!-- ---------- EXPENSES ---------- -->
+    <section id="view-expenses" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Spending</p>
+          <h2>Expenses</h2>
+        </div>
+        <button class="btn btn-gold" id="addExpenseBtn">+ New Expense</button>
+      </header>
+
+      <div class="panel">
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Date</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="expensesTableBody"></tbody>
+        </table>
+        </div>
+        <p id="expensesEmpty" class="empty-state hidden">No expenses recorded yet.</p>
+      </div>
+    </section>
+
+    <!-- ---------- USERS ---------- -->
+    <section id="view-users" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Access Control</p>
+          <h2>Users</h2>
+        </div>
+        <button class="btn btn-gold" id="addUserBtn">+ New User</button>
+      </header>
+
+      <div class="panel" id="passwordRequestsPanel" style="display:none;">
+        <div class="panel-head">
+          <h3>Pending Password Requests</h3>
+          <p class="panel-sub">Set a new password for these users (Edit → New Password), then let them know it directly.</p>
+        </div>
+        <div id="passwordRequestsList"></div>
+      </div>
+
+      <div class="panel" id="photoRequestsPanel" style="display:none;">
+        <div class="panel-head">
+          <h3>Pending Photo Requests</h3>
+          <p class="panel-sub">Review the photo each user wants, then approve or reject it.</p>
+        </div>
+        <div id="photoRequestsList"></div>
+      </div>
+
+      <div class="panel">
+        <p id="usersRestricted" class="empty-state hidden">Only the Owner/Admin can view and manage users.</p>
+        <div id="usersTableWrap">
+          <div class="table-toolbar">
+            <span></span>
+            <span class="table-count" id="userCount"></span>
+          </div>
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Access</th>
+                <th>Status</th>
+                <th>Last Login</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody"></tbody>
+          </table>
+          <p id="usersEmpty" class="empty-state hidden">No users yet. Click "New User" to add your first one.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- TASKS ---------- -->
+    <section id="view-tasks" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Team</p>
+          <h2>Tasks</h2>
+        </div>
+        <button class="btn btn-gold" id="addTaskBtn">+ New Task</button>
+      </header>
+
+      <div class="panel">
+        <div class="table-toolbar">
+          <input type="text" id="taskSearch" class="search-input" placeholder="Search by title or assignee…">
+          <span class="table-count" id="taskCount"></span>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Assigned To</th>
+              <th>Priority</th>
+              <th>Due Date</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="tasksTableBody"></tbody>
+        </table>
+        </div>
+        <p id="tasksEmpty" class="empty-state hidden">No tasks yet. Click "New Task" to assign your first one.</p>
+      </div>
+    </section>
+
+    <!-- ---------- REPORTS ---------- -->
+    <section id="view-reports" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Insights</p>
+          <h2>Reports</h2>
+        </div>
+        <div class="report-header-actions">
+          <select id="reportYearSelect" class="search-input report-year-select"></select>
+          <button class="btn btn-gold" id="exportReportBtn">⬇ Export to Excel</button>
+        </div>
+      </header>
+
+      <div class="stat-grid">
+        <div class="stat-card">
+          <p class="stat-label">Total Income</p>
+          <p class="stat-value income" id="reportStatIncome">Rs 0</p>
+          <p class="stat-foot" id="reportStatIncomeFoot">From delivered orders</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Expenses</p>
+          <p class="stat-value expense" id="reportStatExpense">Rs 0</p>
+          <p class="stat-foot">All recorded outgoings</p>
+        </div>
+        <div class="stat-card highlight">
+          <p class="stat-label">Net Profit / Loss</p>
+          <p class="stat-value" id="reportStatNet">Rs 0</p>
+          <p class="stat-foot" id="reportStatNetFoot">Income minus expenses</p>
+        </div>
+        <div class="stat-card">
+          <p class="stat-label">Total Orders</p>
+          <p class="stat-value" id="reportStatOrders">0</p>
+          <p class="stat-foot">Sales value: <span id="reportStatSales">Rs 0</span></p>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Month-by-Month Breakdown</h3>
+          <p class="panel-sub" id="reportTableSub">Every month of the selected year</p>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Month</th>
+              <th>Orders</th>
+              <th>Income</th>
+              <th>Expenses</th>
+              <th>Profit / Loss</th>
+              <th>Stock (In / Out)</th>
+            </tr>
+          </thead>
+          <tbody id="reportMonthlyBody"></tbody>
+          <tfoot id="reportMonthlyFoot"></tfoot>
+        </table>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Expenses by Category</h3>
+          <p class="panel-sub">Where the money went, selected year</p>
+        </div>
+        <div class="table-scroll">
+        <table class="data-table" id="reportCategoryTable">
+          <thead>
+            <tr>
+              <th>Category</th>
+              <th>Amount</th>
+              <th>Share</th>
+            </tr>
+          </thead>
+          <tbody id="reportCategoryBody"></tbody>
+        </table>
+        </div>
+        <p id="reportCategoryEmpty" class="empty-state hidden">No expenses recorded for this year.</p>
+      </div>
+
+      <div class="panel">
+        <div class="panel-head">
+          <h3>Download Custom Reports</h3>
+          <p class="panel-sub">Export a single month or any date range to Excel</p>
+        </div>
+        <div class="report-download-grid">
+          <div class="report-download-row">
+            <label for="reportMonthPicker">By Month</label>
+            <input type="month" id="reportMonthPicker">
+            <button class="btn btn-outline" id="exportMonthReportBtn">⬇ Download Month</button>
+          </div>
+          <div class="report-download-row">
+            <label for="reportRangeFrom">By Date Range</label>
+            <input type="date" id="reportRangeFrom">
+            <span class="report-range-sep">to</span>
+            <input type="date" id="reportRangeTo">
+            <button class="btn btn-outline" id="exportRangeReportBtn">⬇ Download Range</button>
+          </div>
+          <p id="reportDownloadMsg" class="form-msg"></p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ---------- HISTORY ---------- -->
+    <section id="view-history" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Record</p>
+          <h2>History</h2>
+        </div>
+        <button class="btn btn-ghost" id="clearHistoryBtn">Clear History</button>
+      </header>
+
+      <div class="panel">
+        <ul id="historyList" class="history-list"></ul>
+        <p id="historyEmpty" class="empty-state hidden">No history yet.</p>
+      </div>
+    </section>
+
+    <!-- ---------- SETTINGS ---------- -->
+    <section id="view-settings" class="view">
+      <header class="view-header">
+        <div>
+          <p class="eyebrow">Owner</p>
+          <h2>Settings</h2>
+        </div>
+      </header>
+
+      <div class="panel-grid">
+        <div class="panel">
+          <div class="panel-head">
+            <h3>My Account</h3>
+            <p class="panel-sub" id="myAccountSub">Update your username and profile photo</p>
+          </div>
+
+          <!-- Admin/Owner: change their own photo directly -->
+          <div class="avatar-upload-row hidden" id="myAvatarAdminRow">
+            <span class="avatar-circle lg" id="myAvatarPreview">?</span>
+            <label class="btn btn-outline file-label">
+              Upload Photo
+              <input type="file" id="myAvatarInput" accept="image/*" hidden>
+            </label>
+            <button type="button" class="btn btn-outline" id="myAvatarRemoveBtn">Remove</button>
+          </div>
+
+          <!-- Everyone else: just see their current photo, read-only -->
+          <div class="avatar-upload-row hidden" id="myAvatarReadonlyRow">
+            <span class="avatar-circle lg" id="myAvatarPreviewRO">?</span>
+            <p class="field-hint-inline">Your profile photo — request a change below.</p>
+          </div>
+
+          <form id="changePassForm" class="settings-form">
+            <label for="myUsername">Username</label>
+            <input type="text" id="myUsername" autocomplete="username" required>
+
+            <div id="adminPasswordFieldsWrap" class="hidden">
+              <label for="myNewPass">New Password <span class="field-hint-inline">(Owner/Admin only — leave blank to keep current)</span></label>
+              <input type="password" id="myNewPass" autocomplete="new-password" minlength="4">
+            </div>
+
+            <p id="passChangeMsg" class="form-msg"></p>
+            <button type="submit" class="btn btn-gold" id="changePassSubmitBtn">Save Changes</button>
+          </form>
+
+          <div class="password-request-block" id="passwordRequestBlock">
+            <h4>Need your password changed?</h4>
+            <p class="panel-sub">Only the Owner/Admin can change passwords. Send a request and they'll set a new one and let you know.</p>
+            <div class="password-request-row">
+              <input type="text" id="passwordRequestNote" placeholder="Optional note (e.g. forgot password)">
+              <button type="button" class="btn btn-outline" id="sendPasswordRequestBtn">Send Request to Admin</button>
+            </div>
+            <p id="passwordRequestMsg" class="form-msg"></p>
+          </div>
+
+          <div class="password-request-block" id="photoRequestBlock">
+            <h4>Want your profile photo changed?</h4>
+            <p class="panel-sub">Only the Owner/Admin can update photos. Upload the picture you'd like and send it for approval.</p>
+            <div class="password-request-row">
+              <label class="btn btn-outline file-label">
+                Choose Photo
+                <input type="file" id="photoRequestInput" accept="image/*" hidden>
+              </label>
+              <span class="avatar-circle" id="photoRequestPreview"></span>
+              <input type="text" id="photoRequestNote" placeholder="Optional note">
+              <button type="button" class="btn btn-outline" id="sendPhotoRequestBtn">Send Request to Admin</button>
+            </div>
+            <p id="photoRequestMsg" class="form-msg"></p>
+          </div>
+        </div>
+
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Data Backup</h3>
+            <p class="panel-sub">Your data lives only in this browser</p>
+          </div>
+          <div class="settings-actions">
+            <button id="exportBtn" class="btn btn-outline">Export Backup (.json)</button>
+            <label class="btn btn-outline file-label" id="importLabel">
+              Import Backup
+              <input type="file" id="importInput" accept=".json" hidden>
+            </label>
+            <button id="resetBtn" class="btn btn-danger">Erase All Data</button>
+          </div>
+          <p id="settingsRestrictedNote" class="form-msg hidden">Import and Erase are limited to the Founder and CEO.</p>
+        </div>
+      </div>
+
+      <div class="panel" id="manageListsPanel">
+        <div class="panel-head">
+          <h3>Manage Lists</h3>
+          <p class="panel-sub">Add or remove Categories, Statuses, Priorities and Roles used across the app — no coding needed</p>
+        </div>
+        <div id="manageListsBody" class="manage-lists-body"></div>
+        <p id="manageListsRestrictedNote" class="form-msg hidden">Managing lists is limited to the Founder and CEO / Director.</p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===================== ORDER MODAL ===================== -->
+<div id="orderModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="orderModalTitle">New Order</h3>
+    <form id="orderForm">
+      <input type="hidden" id="orderId">
+      <label for="orderCustomer">Customer Name</label>
+      <input type="text" id="orderCustomer" required>
+
+      <label for="orderContact">Contact</label>
+      <input type="text" id="orderContact" placeholder="0300-1234567" maxlength="12">
+
+      <label for="orderEmail">Email</label>
+      <input type="email" id="orderEmail" placeholder="Email address">
+
+      <label for="orderItem">Service / Item</label>
+      <input type="text" id="orderItem" list="itemsDatalist" placeholder="Type or pick from Items" required>
+      <datalist id="itemsDatalist"></datalist>
+
+      <label for="orderAmount">Amount (Rs)</label>
+      <input type="number" id="orderAmount" min="0" step="0.01" required>
+
+      <label for="orderStatus">Status</label>
+      <select id="orderStatus"></select>
+
+      <label for="orderDate">Date</label>
+      <input type="date" id="orderDate" required>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="orderCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save Order</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== ITEM MODAL ===================== -->
+<div id="itemModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="itemModalTitle">New Item</h3>
+    <form id="itemForm">
+      <input type="hidden" id="itemId">
+      <label for="itemName">Item Name</label>
+      <input type="text" id="itemName" required>
+
+      <label for="itemCategory">Category</label>
+      <select id="itemCategory"></select>
+
+      <label for="itemPrice">Price (Rs)</label>
+      <input type="number" id="itemPrice" min="0" step="0.01" required>
+
+      <label for="itemStock">Stock / Quantity</label>
+      <input type="number" id="itemStock" min="0" step="1" required>
+
+      <label for="itemStatus">Status</label>
+      <select id="itemStatus">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="itemCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save Item</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== EXPENSE MODAL ===================== -->
+<div id="expenseModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="expenseModalTitle">New Expense</h3>
+    <form id="expenseForm">
+      <input type="hidden" id="expenseId">
+      <label for="expenseDesc">Description</label>
+      <input type="text" id="expenseDesc" required>
+
+      <label for="expenseCategory">Category</label>
+      <select id="expenseCategory"></select>
+
+      <label for="expenseAmount">Amount (Rs)</label>
+      <input type="number" id="expenseAmount" min="0" step="0.01" required>
+
+      <label for="expenseDate">Date</label>
+      <input type="date" id="expenseDate" required>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="expenseCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save Expense</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== USER MODAL ===================== -->
+<div id="userModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="userModalTitle">New User</h3>
+    <form id="userForm">
+      <input type="hidden" id="userId">
+      <input type="hidden" id="userAvatarData">
+
+      <label>Profile Photo</label>
+      <div class="avatar-upload-row">
+        <span class="avatar-circle lg" id="userAvatarPreview">?</span>
+        <label class="btn btn-outline file-label">
+          Upload Photo
+          <input type="file" id="userAvatarInput" accept="image/*" hidden>
+        </label>
+        <button type="button" class="btn btn-outline" id="userAvatarRemoveBtn">Remove</button>
+      </div>
+
+      <label for="userName">Full Name</label>
+      <input type="text" id="userName" required>
+
+      <label for="userUsername">Username</label>
+      <input type="text" id="userUsername" autocomplete="off" required>
+
+      <label for="userPassword" id="userPasswordLabel">Password</label>
+      <input type="password" id="userPassword" autocomplete="new-password" minlength="4">
+      <p id="userPasswordHint" class="form-msg hidden">Leave blank to keep the current password.</p>
+
+      <label for="userRole">Role</label>
+      <select id="userRole"></select>
+
+      <div id="userPermissionsWrap" class="hidden">
+        <label>Module Access <span class="field-hint-inline">(only needed for roles without Full Access — see Settings → Manage Lists)</span></label>
+        <div class="permission-checks">
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="dashboard"> Dashboard</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="items"> Items</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="orders"> Orders</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="invoices"> Sales / Invoices</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="expenses"> Expenses</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="users"> Users</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="reports"> Reports</label>
+          <label class="checkbox-pill"><input type="checkbox" class="userPerm" value="history"> History</label>
+        </div>
+        <p class="field-hint-inline">Settings (My Account / password &amp; photo requests) and Tasks (your assigned tasks) always stay visible to every user.</p>
+      </div>
+
+      <label for="userStatus">Status</label>
+      <select id="userStatus">
+        <option value="Active">Active</option>
+        <option value="Inactive">Inactive</option>
+      </select>
+
+      <p id="userFormMsg" class="form-msg"></p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="userCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save User</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== TASK MODAL ===================== -->
+<div id="taskModal" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="taskModalTitle">New Task</h3>
+    <form id="taskForm">
+      <input type="hidden" id="taskId">
+      <label for="taskTitle">Title</label>
+      <input type="text" id="taskTitle" required>
+
+      <label for="taskDescription">Description</label>
+      <input type="text" id="taskDescription" placeholder="Optional details">
+
+      <label for="taskAssignee">Assign To</label>
+      <select id="taskAssignee" required></select>
+
+      <label for="taskPriority">Priority</label>
+      <select id="taskPriority"></select>
+
+      <label for="taskDueDate">Due Date</label>
+      <input type="date" id="taskDueDate">
+
+      <label for="taskStatus">Status</label>
+      <select id="taskStatus"></select>
+
+      <p id="taskFormMsg" class="form-msg"></p>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="taskCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-gold">Save Task</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== INVOICE MODAL ===================== -->
+<div id="invoiceModal" class="modal-overlay hidden">
+  <div class="modal modal-lg">
+    <h3 id="invoiceModalTitle">New Invoice</h3>
+    <form id="invoiceForm">
+      <input type="hidden" id="invoiceId">
+
+      <div class="invoice-form-grid">
+        <div>
+          <label for="invoiceTrackingId">Tracking ID</label>
+          <input type="text" id="invoiceTrackingId" readonly>
+        </div>
+        <div>
+          <label for="invoiceDate">Order Date</label>
+          <input type="date" id="invoiceDate" required>
+        </div>
+        <div>
+          <label for="invoiceCustomer">Customer Name</label>
+          <input type="text" id="invoiceCustomer" required>
+        </div>
+        <div>
+          <label for="invoiceContact">Contact</label>
+          <input type="text" id="invoiceContact" placeholder="0300-1234567" maxlength="12">
+        </div>
+        <div class="span-2">
+          <label for="invoiceEmail">Email</label>
+          <input type="email" id="invoiceEmail">
+        </div>
+      </div>
+
+      <label class="items-label">Products / Services</label>
+      <div class="line-items-wrap">
+        <table class="line-items-table" id="lineItemsTable">
+          <thead>
+            <tr>
+              <th class="li-no">No</th>
+              <th>Product / Service</th>
+              <th class="li-num">Qty</th>
+              <th class="li-num">Price</th>
+              <th class="li-num">Total</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="lineItemsBody"></tbody>
+        </table>
+        <button type="button" class="btn btn-ghost btn-sm" id="addLineItemBtn">+ Add Row</button>
+      </div>
+      <datalist id="lineItemsDatalist"></datalist>
+
+      <div class="invoice-summary">
+        <div>
+          <label for="invoiceSubtotal">Subtotal</label>
+          <input type="text" id="invoiceSubtotal" readonly>
+        </div>
+        <div>
+          <label for="invoicePaid">Paid</label>
+          <input type="number" id="invoicePaid" min="0" step="0.01" value="0">
+        </div>
+        <div>
+          <label for="invoicePending">Pending</label>
+          <input type="text" id="invoicePending" readonly>
+        </div>
+      </div>
+
+      <label class="items-label">Order Status</label>
+      <div class="status-radio-group" id="invoiceStatusGroup"></div>
+
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" id="invoiceCancelBtn">Cancel</button>
+        <button type="submit" class="btn btn-outline" id="saveAndPrintBtn">Save &amp; Print</button>
+        <button type="submit" class="btn btn-gold">Save Invoice</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ===================== CONFIRM MODAL ===================== -->
+<div id="confirmModal" class="modal-overlay hidden">
+  <div class="modal modal-sm">
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmMsg" class="confirm-msg"></p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-ghost" id="confirmCancelBtn">Cancel</button>
+      <button type="button" class="btn btn-danger" id="confirmOkBtn">Yes, Continue</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===================== PRINT TEMPLATE (hidden, populated before window.print) ===================== -->
+<div id="printInvoiceArea" class="print-invoice"></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="script.js"></script>
+</body>
+</html>
