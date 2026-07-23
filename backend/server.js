@@ -1,11 +1,16 @@
-require('dotenv').config();
 const path = require('path');
+// 1. Ensure .env.local is targeted properly
+require('dotenv').config({ path: path.resolve(__dirname, '.env.local') });
+
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
+
+// Route Imports
 const buildResourceRouter = require('./routes/resourceRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 
+// Model Imports
 const Item = require('./models/Item');
 const Order = require('./models/Order');
 const Expense = require('./models/Expense');
@@ -19,10 +24,16 @@ const PhotoRequest = require('./models/PhotoRequest');
 
 const app = express();
 
-app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(express.json({ limit: '5mb' })); // invoices/history can grow, keep some headroom
+// Security & Parsing Middleware
+const allowedOrigins = process.env.CORS_ORIGIN 
+  ? process.env.CORS_ORIGIN.split(',') 
+  : '*';
 
-// One resource route per collection the frontend used to keep in localStorage.
+app.use(cors({ origin: allowedOrigins, credentials: true }));
+app.use(express.json({ limit: '5mb' }));
+app.use(express.urlencoded({ extended: true, limit: '5mb' }));
+
+// API Resource Routes
 app.use('/api/items', buildResourceRouter(Item));
 app.use('/api/orders', buildResourceRouter(Order));
 app.use('/api/expenses', buildResourceRouter(Expense));
@@ -33,24 +44,59 @@ app.use('/api/tasks', buildResourceRouter(Task));
 app.use('/api/stockmoves', buildResourceRouter(StockMove));
 app.use('/api/passwordrequests', buildResourceRouter(PasswordRequest));
 app.use('/api/photorequests', buildResourceRouter(PhotoRequest));
-// Singleton document: categories, statuses, priorities, roles.
 app.use('/api/settings', settingsRoutes);
 
-app.get('/api/health', (req, res) => res.json({ ok: true }));
+// Health Check Route
+app.get('/api/health', (req, res) => res.status(200).json({ ok: true, timestamp: new Date() }));
 
-// Serve the frontend (index.html/style.css/script.js) from this same app,
-// so the whole CRM lives under one cPanel Node.js App / one domain — no
-// separate static hosting, no CORS setup needed.
+// Static Frontend Serving & SPA Catch-All
 const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
 app.use(express.static(FRONTEND_DIR));
+
 app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
 
+// Centralized Global Error Handler Middleware
+app.use((err, req, res, next) => {
+  console.error('🔥 Server Error:', err.stack || err.message);
+  res.status(err.status || 500).json({
+    error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
+  });
+});
+
+// Server Initialization
 const PORT = process.env.PORT || 5000;
 
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`🚀 EDH CRM running on http://localhost:${PORT}`);
-  });
+async function startServer() {
+  try {
+    await connectDB();
+    const server = app.listen(PORT, () => {
+      console.log(`🚀 EDH CRM running on port ${PORT}`);
+    });
+
+    // Graceful Shutdown on SIGTERM (Common in Hosting Environments like cPanel / Hostinger)
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM signal received: closing HTTP server');
+      server.close(() => {
+        console.log('HTTP server closed');
+      });
+    });
+
+  } catch (error) {
+    console.error('❌ Database connection failed. Server not started:', error.message);
+    process.exit(1);
+  }
+}
+
+startServer();
+
+// Global Process Error Handlers
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+});
+
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  process.exit(1);
 });
