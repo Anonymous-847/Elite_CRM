@@ -1,15 +1,12 @@
 const path = require('path');
 // 1. Target .env.local in the current directory
 require('dotenv').config({ path: path.resolve(__dirname, '.env.local') });
-
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
-
 // Route Imports
 const buildResourceRouter = require('./routes/resourceRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
-
 // Model Imports
 const Item = require('./models/Item');
 const Order = require('./models/Order');
@@ -21,18 +18,45 @@ const Task = require('./models/Task');
 const StockMove = require('./models/StockMove');
 const PasswordRequest = require('./models/PasswordRequest');
 const PhotoRequest = require('./models/PhotoRequest');
-
 const app = express();
+
+// ---------------------------------------------------------------------
+// SITE-WIDE PASSWORD GATE (HTTP Basic Auth)
+// Personal/internal use only. Runs before CORS/routes/static files, so
+// the browser shows a native login prompt before ANYTHING loads — API
+// or frontend. Set GATE_USERNAME + GATE_PASSWORD in .env.local to turn
+// it on; leave either blank to skip it (e.g. for local development).
+// ---------------------------------------------------------------------
+const GATE_USERNAME = process.env.GATE_USERNAME;
+const GATE_PASSWORD = process.env.GATE_PASSWORD;
+
+if (GATE_USERNAME && GATE_PASSWORD) {
+  app.use((req, res, next) => {
+    const header = req.headers.authorization || '';
+    const [scheme, encoded] = header.split(' ');
+
+    if (scheme === 'Basic' && encoded) {
+      const [user, pass] = Buffer.from(encoded, 'base64').toString().split(':');
+      if (user === GATE_USERNAME && pass === GATE_PASSWORD) {
+        return next();
+      }
+    }
+
+    res.set('WWW-Authenticate', 'Basic realm="Elite Digital Hub CRM", charset="UTF-8"');
+    res.status(401).send('Authentication required.');
+  });
+  console.log('🔒 Site-wide password gate is ON');
+} else {
+  console.log('⚠️  Site-wide password gate is OFF (GATE_USERNAME/GATE_PASSWORD not set)');
+}
 
 // Security & Parsing Middleware
 const allowedOrigins = process.env.CORS_ORIGIN 
   ? process.env.CORS_ORIGIN.split(',') 
   : '*';
-
 app.use(cors({ origin: allowedOrigins, credentials: true }));
 app.use(express.json({ limit: '5mb' }));
 app.use(express.urlencoded({ extended: true, limit: '5mb' }));
-
 // API Resource Routes
 app.use('/api/items', buildResourceRouter(Item));
 app.use('/api/orders', buildResourceRouter(Order));
@@ -45,21 +69,16 @@ app.use('/api/stockmoves', buildResourceRouter(StockMove));
 app.use('/api/passwordrequests', buildResourceRouter(PasswordRequest));
 app.use('/api/photorequests', buildResourceRouter(PhotoRequest));
 app.use('/api/settings', settingsRoutes);
-
 // Health Check Route
 app.get('/api/health', (req, res) => res.status(200).json({ ok: true, timestamp: new Date() }));
-
 // -------------------------------------------------------------
 // Updated Frontend Path (since frontend is INSIDE backend)
 // -------------------------------------------------------------
 const FRONTEND_DIR = path.join(__dirname, 'frontend');
-
 app.use(express.static(FRONTEND_DIR));
-
 app.get(/^\/(?!api\/).*/, (req, res) => {
   res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
 });
-
 // Centralized Global Error Handler Middleware
 app.use((err, req, res, next) => {
   console.error('🔥 Server Error:', err.stack || err.message);
@@ -67,17 +86,14 @@ app.use((err, req, res, next) => {
     error: process.env.NODE_ENV === 'production' ? 'Internal Server Error' : err.message,
   });
 });
-
 // Server Initialization
 const PORT = process.env.PORT || 5000;
-
 async function startServer() {
   try {
     await connectDB();
     const server = app.listen(PORT, () => {
       console.log(`🚀 EDH CRM running on port ${PORT}`);
     });
-
     // Graceful Shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM signal received: closing HTTP server');
@@ -85,20 +101,16 @@ async function startServer() {
         console.log('HTTP server closed');
       });
     });
-
   } catch (error) {
     console.error('❌ Database connection failed. Server not started:', error.message);
     process.exit(1);
   }
 }
-
 startServer();
-
 // Global Process Error Handlers
 process.on('unhandledRejection', (reason, promise) => {
   console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
 });
-
 process.on('uncaughtException', (error) => {
   console.error('❌ Uncaught Exception:', error);
   process.exit(1);
