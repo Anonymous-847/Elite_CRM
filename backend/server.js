@@ -1,5 +1,5 @@
 const path = require('path');
-// 1. Ensure .env.local is targeted properly
+// 1. Target .env.local in the current directory
 require('dotenv').config({ path: path.resolve(__dirname, '.env.local') });
 
 const express = require('express');
@@ -49,8 +49,11 @@ app.use('/api/settings', settingsRoutes);
 // Health Check Route
 app.get('/api/health', (req, res) => res.status(200).json({ ok: true, timestamp: new Date() }));
 
-// Static Frontend Serving & SPA Catch-All
-const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
+// -------------------------------------------------------------
+// Updated Frontend Path (since frontend is INSIDE backend)
+// -------------------------------------------------------------
+const FRONTEND_DIR = path.join(__dirname, 'frontend');
+
 app.use(express.static(FRONTEND_DIR));
 
 app.get(/^\/(?!api\/).*/, (req, res) => {
@@ -75,7 +78,7 @@ async function startServer() {
       console.log(`🚀 EDH CRM running on port ${PORT}`);
     });
 
-    // Graceful Shutdown on SIGTERM (Common in Hosting Environments like cPanel / Hostinger)
+    // Graceful Shutdown
     process.on('SIGTERM', () => {
       console.log('SIGTERM signal received: closing HTTP server');
       server.close(() => {
