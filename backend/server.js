@@ -1,6 +1,5 @@
 require('dotenv').config();
 const path = require('path');
-const fs = require('fs');
 const express = require('express');
 const cors = require('cors');
 const connectDB = require('./config/db');
@@ -22,7 +21,7 @@ const PhotoRequest = require('./models/PhotoRequest');
 const app = express();
 
 app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
-app.use(express.json({ limit: '5mb' }));
+app.use(express.json({ limit: '5mb' })); // Invoices/history can grow, keep headroom
 
 // API Routes
 app.use('/api/items', buildResourceRouter(Item));
@@ -36,30 +35,23 @@ app.use('/api/tasks', buildResourceRouter(Task));
 app.use('/api/stockmoves', buildResourceRouter(StockMove));
 app.use('/api/passwordrequests', buildResourceRouter(PasswordRequest));
 app.use('/api/photorequests', buildResourceRouter(PhotoRequest));
+
+// Singleton document: categories, statuses, priorities, roles.
 app.use('/api/settings', settingsRoutes);
 
 app.get('/api/health', (req, res) => res.json({ ok: true }));
 
-// --- FRONTEND STATIC SERVING ---
-// Adjust 'frontend' below to 'frontend/dist' or 'frontend/build' if needed
-const FRONTEND_DIR = path.join(__dirname, '..', 'frontend');
-
-// Diagnostic check on startup
-if (fs.existsSync(FRONTEND_DIR)) {
-  console.log(`📁 Frontend directory found at: ${FRONTEND_DIR}`);
-  console.log(`📂 Contents of frontend dir:`, fs.readdirSync(FRONTEND_DIR));
-} else {
-  console.error(`❌ Frontend directory DOES NOT EXIST at: ${FRONTEND_DIR}`);
-}
+// Serve static frontend files from 'backend/frontend'
+const FRONTEND_DIR = path.join(__dirname, 'frontend');
 
 app.use(express.static(FRONTEND_DIR));
 
+// Fallback catch-all route to serve index.html for frontend routing
 app.get(/^\/(?!api\/).*/, (req, res) => {
-  const indexPath = path.join(FRONTEND_DIR, 'index.html');
-  res.sendFile(indexPath, (err) => {
+  res.sendFile(path.join(FRONTEND_DIR, 'index.html'), (err) => {
     if (err) {
-      console.error(`Error attempting to send: ${indexPath}`);
-      res.status(404).send(`index.html not found at expected path: ${indexPath}`);
+      console.error('Error serving index.html:', err.message);
+      res.status(404).send('Frontend index.html not found on server.');
     }
   });
 });
