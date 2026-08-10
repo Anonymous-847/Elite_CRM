@@ -9,6 +9,7 @@ const DEFAULT_SETTINGS = {
   id: 'app-settings',
   itemCategories: ['Web Development', 'Graphic Design', 'Digital Marketing', 'Video Editing', 'Consulting', 'Sublimation', 'Other'],
   expenseCategories: ['Salaries', 'Software / Tools', 'Marketing', 'Rent / Utilities', 'Equipment', 'Other'],
+  incomeCategories: ['Cash Payment', 'Bank Transfer', 'Refund', 'Adjustment', 'Other'],
   orderStatuses: ['Received', 'Pending', 'Delivered'],
   taskPriorities: ['Low', 'Medium', 'High'],
   taskStatuses: ['To Do', 'In Progress', 'Done'],
